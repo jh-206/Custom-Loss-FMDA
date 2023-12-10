@@ -341,7 +341,8 @@ def format_precip(precipa):
     rain=np.array(precipa, dtype = 'float64')
     rain = np.diff(rain) # first difference to convert accumulated to hourly
     rain = np.insert(rain, 0, [np.NaN]) # add NaN entry to account for diff
-    rain[rain > 1000] = np.NaN # filter out erroneously high
+    # Highest ever recorded hourly rainfall in inches is about 16: https://www.weather.gov/owp/hdsc_world_record
+    rain[rain > 100] = np.NaN # filter out erroneously high
     rain[rain < 0] = np.NaN # filter out negative, results from diff function after precipa goes to zero
     return rain
 
