@@ -13,3 +13,8 @@ https://www.nature.com/articles/s41612-022-00248-4
 NN Fire spread
 
 https://link.springer.com/article/10.1007/s10694-019-00846-4
+
+
+Yule Walker
+
+https://www.gaussianwaves.com/2014/05/yule-walker-estimation/
