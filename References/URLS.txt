@@ -29,3 +29,16 @@ https://www.weather.gov/owp/hdsc_world_record
 
 MesoWest Var Defs
 https://www.weather.gov/media/wrh/mesowest/MesoWest_Data_Variables_Definitions.pdf
+
+
+
+AR for outlier detection in live FM
+https://annforsci.biomedcentral.com/articles/10.1007/s13595-021-01057-0
+
+AR to model fire risk in Spain (are they modeling FM, or just an input?)
+https://research.utwente.nl/en/publications/model-design-to-predict-forest-fire-risk-in-navarra-spain-using-t-2
+
+FM Model Evaluation Study
+https://www.sciencedirect.com/science/article/pii/S0378112714005878?casa_token=dSwvwWxsH0UAAAAA:hZ14HcMGMS7hrJbhesKVCu5sMHmwfE1OapmAVgcW2jUxQ7dE2VsRcqTS2mdCmY25dSENYZBY#s0010
+
+
