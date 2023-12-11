@@ -2,7 +2,10 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from utils import vprint
+from statsmodels.tsa.ar_model import AutoReg
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Augmented KF Functions
 
 def model_decay(m0,E,partials=0,T1=0.1,tlen=1):  
     # Arguments: 
@@ -202,4 +205,47 @@ def run_augmented_kf(dat,h2=None,hours=None, H=H, Q=Q, R=R):
                                   Q*0.0)
       # print('time',t,'data',d[t],'forecast',u[0,t],'Ec',u[1,t])
     return u
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# AR Model Functions
+
+def build_design(d, covariates=['Ed', 'Ew', 'rain', 'wind_speed']):
+    # Build design matrix 
+    # Inputs:
+    # d: FMDA dictionary
+    # Returns: (numpy.ndarray) design matrix
+    hours = len(d['fm'])
+    hour = np.resize(range(1, 24), hours) # repeat 1-24 for each response value (times here aren't real)
+    
+    X = np.column_stack(([d[x] for x in covariates]))
+    X = np.column_stack((X, hour))
+    return X
+    
+def train_AR(fm, X, lag, h2 = int(20*24)):
+    fmtr = fm[0:h2]
+    ar = AutoReg(fmtr, lags=lag, trend="c", exog = X[0:h2]).fit()
+    return ar
+def predict_AR(ar, X, hours, h2 = int(20*24)):
+    return ar.model.predict(ar.params, start=h2, end=hours-1, exog_oos=X[h2:hours], dynamic=False)
+
+def run_ar(dat,h2=None,hours=None):
+    if h2 is None:
+        h2 = int(dat['h2'])
+    if hours is None:
+        hours = int(dat['hours'])
+    XX = build_design(dat)
+    fm = dat['fm']
+    hours = len(fm)
+    fmte = dat['fm'][h2:hours] # response var over forecast period
+
+    ar1 = train_AR(fm, XX, h2=h2, lag=1)
+    preds1 = predict_AR(ar1, XX, hours, h2)
+
+    fit1 = ar1.predict(start=0, end=h2-1, exog = XX[0:h2], dynamic=False) 
+    # Combine train and predict
+    m = np.concatenate((fit1, preds1))
+    
+    return m
+
+
 
