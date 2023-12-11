@@ -284,6 +284,12 @@ def rnn_predict(model, params, rnn_dat):
     return m
 
 def run_rnn(case_data,params,fit=True,title2=''):
+    # Run RNN on given case dictionary of FMDA data with certain params. Used internally in run_case
+    # Inputs:
+    # case_data: (dict) collection of cases with FMDA data. Cases are different locations and times, or synthetic data
+    # params: (dict) collection of run options for model
+    # fit: (bool) whether or not to fit RNN to data
+    # title2: (str) title of RNN run to be joined to string with other info for plotting title
     verbose = params['verbose']
     
     reproducibility.set_seed() # Set seed for reproducibility
@@ -321,16 +327,22 @@ def run_case(case_data,params, check_data=False):
     if check_data:
         check_data(case_data)
     hours=case_data['hours']
-    if 'train_frac' in params:
+    if 'train_frac' in params and not('h2' in case_data.keys()):
         case_data['h2'] = round(hours * params['train_frac'])
     h2=case_data['h2']
-    plot_data(case_data,title2='case data on input')
+    # plot_data(case_data,title2='case data on input')
     m,Ec = mod.run_augmented_kf(case_data)  # extract from state
     case_data['m']=m
     case_data['Ec']=Ec
     plot_data(case_data,title2='augmented KF')
     rmse =      {'Augmented KF':rmse_data(case_data)}
     del case_data['Ec']  # cleanup
-    rmse.update({'RNN initial':run_rnn(case_data,params,fit=False,title2='with initial weights, no fit')})
+
+    ## Added AR Model
+    case_data['m']=mod.run_ar(case_data, h2=h2, hours=hours)
+    plot_data(case_data,title2='AR')
+    rmse.update({'AR':rmse_data(case_data)})
+    
+    # rmse.update({'RNN initial':run_rnn(case_data,params,fit=False,title2='with initial weights, no fit')})
     rmse.update({'RNN trained':run_rnn(case_data,params,fit=True,title2='with trained RNN')})
     return rmse
