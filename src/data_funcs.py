@@ -151,7 +151,7 @@ def synthetic_data(days=20,power=4,data_noise=0.02,process_noise=0.0,
     return dat
 
 def plot_one(hmin,hmax,dat,name,linestyle,c,label, alpha=1,type='plot'):
-# helper for plot_data
+    # helper for plot_data
     if name in dat:
         h = len(dat[name])
         if hmin is None:
@@ -165,6 +165,11 @@ def plot_one(hmin,hmax,dat,name,linestyle,c,label, alpha=1,type='plot'):
             plt.scatter(hour,dat[name][hmin:hmax],linestyle=linestyle,c=c,label=label, alpha=alpha)
             
 def plot_data(dat,title=None,title2=None,hmin=None,hmax=None):
+    # Plot fmda dictionary of data and model if present
+    # Inputs:
+    # dat: FMDA dictionary
+    # Returns: none
+    
     if 'hours' in dat:
         if hmax is None:
             hmax = dat['hours']
@@ -180,18 +185,20 @@ def plot_data(dat,title=None,title2=None,hmin=None,hmax=None):
     plot_one(hmin,hmax,dat,'rain',linestyle='-',c='b',label='Rain', alpha=.4)
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Note: the code within the tildes here makes a more complex, annotated plot
     plt.axvline(dat['h2'], linestyle=':', c='k', alpha=.8)
-    
-    plt.annotate('', xy=(0, -6),xytext=(dat['h2'],-6),                  
-            arrowprops=dict(arrowstyle='<->'),
+    yy = plt.ylim() # used to format annotations
+    plt.annotate('', xy=(yy[0], yy[0]),xytext=(dat['h2'],yy[0]),                  
+            arrowprops=dict(arrowstyle='<-', linewidth=2),
             annotation_clip=False)
-    plt.annotate('Training',xy=(np.ceil(dat['h2']/2),-7),xytext=(np.ceil(dat['h2']/2),-7),
+    plt.annotate('(Training)',xy=(np.ceil(dat['h2']/2),yy[1]),xytext=(np.ceil(dat['h2']/2),yy[1]+1),
+            annotation_clip=False, alpha=.8)
+    plt.annotate('', xy=(dat['h2'], yy[0]),xytext=(dat['hours'],yy[0]),                  
+            arrowprops=dict(arrowstyle='<-', linewidth=2),
             annotation_clip=False)
-    plt.annotate('', xy=(dat['h2'], -6),xytext=(dat['hours'],-6),                  
-            arrowprops=dict(arrowstyle='<->'),
-            annotation_clip=False)
-    plt.annotate('Forecast',xy=(dat['h2']+np.ceil(dat['h2']/2),-7),xytext=(dat['h2']+np.ceil(dat['h2']/2),-7),
-            annotation_clip=False)
+    plt.annotate('(Forecast)',xy=(np.ceil(dat['h2']+(dat['hours']-dat['h2'])/2),yy[1]),
+                 xytext=(np.ceil(dat['h2']+(dat['hours']-dat['h2'])/2),yy[1]+1),
+            annotation_clip=False, alpha=.8)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     
@@ -203,13 +210,13 @@ def plot_data(dat,title=None,title2=None,hmin=None,hmax=None):
     if title2 is not None:
         t = t + ' ' + title2 
     t = t + ' (' + rmse_data_str(dat)+')'
-    plt.title(t)
+    plt.title(t, y=1.1)
     plt.xlabel('Time (hours)')
     if 'rain' in dat:
         plt.ylabel('FM (%) / Rain (mm/h)')
     else:
         plt.ylabel('Fuel moisture content (%)')
-    plt.legend()
+    plt.legend(loc="upper left")
     
 # Calculate mean squared error
 def rmse(a, b):
@@ -247,9 +254,9 @@ def rmse_data(dat, hours = None, h2 = None, simulation='m', measurements='fm'):
     fm = dat[measurements]
     case = dat['case']
     
-    train =rmse(m[:h2], fm[:h2])
-    predict = rmse(m[h2:hours], fm[h2:hours])
-    all = rmse(m[:hours], fm[:hours])
+    train =rmse_skip_nan(m[:h2], fm[:h2])
+    predict = rmse_skip_nan(m[h2:hours], fm[h2:hours])
+    all = rmse_skip_nan(m[:hours], fm[:hours])
     print(case,'Training 1 to',h2,'hours RMSE:   ' + str(np.round(train, 4)))
     print(case,'Prediction',h2+1,'to',hours,'hours RMSE: ' + str(np.round(predict, 4)))
     
