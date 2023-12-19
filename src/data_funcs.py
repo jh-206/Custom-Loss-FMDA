@@ -295,7 +295,7 @@ def format_raws(stn, fixnames = True):
     # Transform Data
     raws_dat['air_temp_set_1'] = raws_dat['air_temp_set_1'] + 273.15 ## convert C to K
     if 'precip_accum_set_1' in raws_dat.keys():
-        raws_dat['precip_accum_set_1'] = format_precip(raws_dat['precip_accum_set_1']) ## format precip data, accumulated to hourly
+        raws_dat['rain'] = format_precip(raws_dat['precip_accum_set_1']) ## format precip data, accumulated to hourly
     
     
     # Calculate Equilibrium Temps
@@ -317,7 +317,7 @@ def format_raws(stn, fixnames = True):
     # Simplify names 
     if fixnames:
         var_mapping = {
-            'date_time': 'time', 'precip_accum': 'rain', 'solar_radiation': 'solar',
+            'date_time': 'time', 'precip_accum': 'precipa', "rain": "rain", 'solar_radiation': 'solar',
             'fuel_moisture': 'fm', 'relative_humidity': 'rh',
             'air_temp': 'temp', 'Ed': 'Ed', 'Ew': 'Ew', 'STID': 'STID',
             'LONGITUDE': 'lon', 'LATITUDE': 'lat'
