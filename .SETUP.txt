@@ -1,0 +1,4 @@
+git clone jh-206/Custom-Loss-FMDA
+
+conda env create -f env.yml
+
