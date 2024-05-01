@@ -8,4 +8,6 @@ conda install -c conda-forge basemap
 
 pip install plotly
 
+pip install seaborn
+
 
