@@ -21,8 +21,8 @@ class XGB:
     -----------
     params : dict
         Parameters to be passed to the XGBoost model.
-    objective : str, default='reg:squarederror'
-        Objective function to be optimized during training.
+    loss : str, default='reg:squarederror'
+        loss function to be optimized during training.
         See https://xgboost.readthedocs.io/en/latest/parameter.html for options.
 
     Attributes:
@@ -36,26 +36,24 @@ class XGB:
     --------
     fit(X_train, y_train):
         Train the XGBoost model on the training data.
-
     predict(X_test):
         Make predictions using the trained model.
-
     get_feature_importance():
         Get feature importances from the trained model.
     """
-    def __init__(self, params, objective='reg:squarederror'):
+    def __init__(self, params, loss='reg:squarederror'):
         """
         Initialize the XGB class.
         Parameters:
         -----------
         params : dict
             HyperParameters to be passed to the XGBoost model.
-        objective : str or custom func, default='reg:squarederror'
-            Objective function to be optimized during training.
+        loss : str or custom func, default='reg:squarederror'
+            loss function to be optimized during training.
             See https://xgboost.readthedocs.io/en/latest/parameter.html for options.
         """
         self.params = params
-        self.params['objective'] = objective
+        self.params['objective'] = loss # XGBoost package uses term objective function, translate here
         self.model = xg.XGBRegressor(**self.params)
 
     def fit(self, X_train, y_train):
@@ -105,32 +103,29 @@ class LM:
     -----------
     params : dict
         Parameters to be passed to the XGBoost model.
-    objective : 
+    loss : 
 
     Attributes:
     -----------
     model : sklearn.linear_model._base.LinearRegression
         Underlying linear regression model.
-
     Methods:
     --------
     fit(X_train, y_train):
         Train the XGBoost model on the training data.
-
     predict(X_test):
         Make predictions using the trained model.
-
     get_coefs():
         Get coefficient estimates and summary stats.
     """
-    def __init__(self, objective=None):
+    def __init__(self, loss=None):
         """
         Initialize the LM class.
         Parameters:
         -----------
-        objective : str or custom func
+        loss : str or custom func
         """
-        # self.params['objective'] = objective
+        # self.params['loss'] = loss
         self.model = LinearRegression()
 
     def fit(self, X_train, y_train):
