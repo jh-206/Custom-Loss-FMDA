@@ -7,7 +7,11 @@ xgb:
   scale_pos_weight: 1
 
 mlp:
-  hidden_layers: 1
-  hidden_units: [10]
-  activation: relu
-  dropout: 0.2
+    hidden_units: 10
+    activation: relu
+    optimizer: adam
+    epochs: 10
+    batch_size: 32
+    validation_split: 0.2
+    dropout: 0.2
+    learning_rate: 0.001
