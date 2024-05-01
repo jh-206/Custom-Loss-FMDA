@@ -218,7 +218,7 @@ class MLP:
         y_train : array-like of shape (n_samples,)
             Target values.
         """
-        self.model.fit(X_train, y_train, epochs=params['epochs'], batch_size=params['batch_size'], validation_split=params['validation_split'])
+        self.model.fit(X_train, y_train, epochs=self.params['epochs'], batch_size=self.params['batch_size'], validation_split=self.params['validation_split'])
 
     def predict(self, X_test):
         """
