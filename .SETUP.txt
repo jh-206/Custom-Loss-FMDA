@@ -6,6 +6,6 @@ conda activate ml
 
 conda install -c conda-forge basemap
 
-
+pip install plotly
 
 
