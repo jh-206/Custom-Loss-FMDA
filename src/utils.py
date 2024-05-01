@@ -2,11 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Polygon
+import plotly.express as px
+import plotly.graph_objects as go
 
 # Map stations, credit 
     # https://stackoverflow.com/questions/53233228/plot-latitude-longitude-from-csv-in-python-3-6
     # https://gist.github.com/blaylockbk/79658bdde8c1334ab88d3a67c6e57477
 
+## NOTE: doesn't work on conda environment ml, but works on base. TODO: investigate installs
 def make_st_map(df):
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -15,7 +18,7 @@ def make_st_map(df):
     lons = (np.amin(df.lon), np.amax(df.lon))
     lats = (np.amin(df.lat), np.amax(df.lat))
     map = Basemap(projection='cyl', llcrnrlat=lats[0]-buf, urcrnrlat=lats[1]+buf,
-                    llcrnrlon=lons[0]-buf,urcrnrlon=lons[1]+buf, resolution="i")
+                    llcrnrlon=lons[0]-buf,urcrnrlon=lons[1]+buf, resolution="l")
     map.drawcoastlines()
     map.drawcountries()
     map.drawstates()
@@ -33,10 +36,6 @@ def make_st_map(df):
     ax.add_patch(bounding_box)
     
     return 
-
-
-import plotly.express as px
-import plotly.graph_objects as go
 
 # Map stations, credit https://stackoverflow.com/questions/53233228/plot-latitude-longitude-from-csv-in-python-3-6
 
