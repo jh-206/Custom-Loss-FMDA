@@ -1,0 +1,13 @@
+xgb:
+  max_depth: 3
+  eta: 0.1
+  min_child_weight: 1
+  subsample: 0.8
+  colsample_bytree: 0.8
+  scale_pos_weight: 1
+
+mlp:
+  hidden_layers: 1
+  hidden_units: [10]
+  activation: relu
+  dropout: 0.2
