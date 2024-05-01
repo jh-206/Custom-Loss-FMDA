@@ -2,3 +2,10 @@ git clone jh-206/Custom-Loss-FMDA
 
 conda env create -f env.yml
 
+conda activate ml
+
+conda install -c conda-forge basemap
+
+
+
+
