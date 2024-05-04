@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xg
 import tensorflow as tf
+import tensorflow.keras.backend as K
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.linear_model import LinearRegression
 
@@ -56,7 +57,7 @@ class XGB:
         self.params['objective'] = loss # XGBoost package uses term objective function, translate here
         self.model = xg.XGBRegressor(**self.params)
 
-    def fit(self, X_train, y_train):
+    def fit(self, X_train, y_train, w=None):
         """
         Train the XGBoost model on the training data.
 
@@ -66,8 +67,13 @@ class XGB:
             Training input samples.
         y_train : array-like of shape (n_samples,)
             Target values.
+        w: array-like of shape (n_ssamples,)
+            Weights to use for custom loss
         """
-        self.model.fit(X_train, y_train)
+        if w is None:
+            self.model.fit(X_train, y_train)
+        else:
+            self.model.fit(X_train, y_train, w)
 
     def predict(self, X_test):
         """
@@ -128,7 +134,7 @@ class LM:
         # self.params['loss'] = loss
         self.model = LinearRegression()
 
-    def fit(self, X_train, y_train):
+    def fit(self, X_train, y_train, w=None):
         """
         Train the LM model on the training data.
 
@@ -138,8 +144,13 @@ class LM:
             Training input samples.
         y_train : array-like of shape (n_samples,)
             Target values.
+        w : array-like of shape (n_samples,)
+            sample weights for weighted loss func
         """
-        self.model.fit(X_train, y_train)
+        if w is None:
+            self.model.fit(X_train, y_train)
+        else:
+            self.model.fit(X_train, y_train, w)
 
     def predict(self, X_test):
         """
