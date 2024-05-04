@@ -4,6 +4,7 @@ from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Polygon
 import plotly.express as px
 import plotly.graph_objects as go
+from functools import singledispatch
 
 # Map stations, credit 
     # https://stackoverflow.com/questions/53233228/plot-latitude-longitude-from-csv-in-python-3-6
@@ -76,3 +77,44 @@ def make_st_map_interactive(df):
         mapbox_center={"lat": np.median(df.lat), "lon": np.median(df.lon)},  # Center the map on desired location
     )
     return fig
+
+
+
+
+# Function to generate hash value for various data structures not readily hashed in base python
+# used to track reproducibility
+
+@singledispatch
+## Top level hash function with built-in hash function for str, float, int, etc
+def hash2(x):
+    return hash(x)
+
+@hash2.register(np.ndarray)
+## Hash numpy array, hash array with pandas and return integer sum
+def _(x):
+    # return hash(x.tobytes())
+    return np.sum(pd.util.hash_array(x))
+
+@hash2.register(list)
+## Hash list, convert to tuple
+def _(x):
+    return hash2(tuple(x))
+
+@hash2.register(tuple)
+def _(x):
+    r = 0
+    for i in range(len(x)):
+        r+=hash2(x[i])
+    return r
+
+@hash2.register(dict)
+## Hash dict, loop through keys and hash each element via dispatch. Return hashed integer sum of hashes
+def _(x, keys = None, verbose = False):
+    r = 0 # return value integer
+    if keys is None: # allow user input of keys to hash, otherwise hash them all
+        keys = [*x.keys()]
+    keys.sort()
+    for key in keys:
+        if (verbose): print('Hashing', key)
+        r += hash2(x[key])
+    return hash(r)
