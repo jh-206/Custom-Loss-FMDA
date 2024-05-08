@@ -3,8 +3,69 @@ import subprocess
 import os.path as osp
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
+from sklearn.model_selection import train_test_split
 import logging
+
+# Function for spatiotemporal crossvalidation
+def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date", 
+                               temporal_test_frac = 0.1, spatial_test_frac = 0.2):
+    """
+    Method to split a dataframe into train/test, accounting for spatiotemporal relationships.
+    Resulting test set will consist of locations not included in training and at future times.
+    NOTE: set seed externally
+    Parameters:
+    -----------
+    df : DataFrame
+        Dataframe of data to be split
+    yid : str, default='fm'
+        Column of dataframe to be used for y_train, y_test
+    spid : str, default='stid'
+        Spatial ID, column of dataframe used to identify unique locations. 
+        If lon/lat specify unique locations, use these to construct a single IDs column
+    tid : str, default = "date"
+        Temporal ID, column of dataframe consisting of datetimes of observations
+
+    Returns:
+    -----------
+    X_train, X_test, y_train, y_test : 
+        X_train & X_test : dataframes
+        y_train, y_test : pandas Series
+    """
+
+    # Get array of unique spatial locations
+    locs = df[spid].unique()
+    train_locs, test_locs = train_test_split(locs, test_size=spatial_test_frac)
+
+    # Subset based on time
+    times = df[tid].unique()
+    hour_diff = (times.max() - times.min()).total_seconds() / 3600 # Difference in hours between start and stop times
+    h2 = times.min() + timedelta(hours=hour_diff*temporal_test_frac) # time marking train/test split
+
+    # Split based on space and time
+    df_train = df[(df[tid] < h2) & (df[spid].isin(train_locs))]
+    df_test = df[(df[tid] >= h2) & (~df[spid].isin(train_locs))]
+
+    # Return arrays in the standard format
+    X_train = df_train.loc[:, ~df.columns.str.contains(yid)]
+    X_test = df_test.loc[:, ~df.columns.str.contains(yid)]
+    y_train = df_train[yid]
+    y_test = df_test[yid]
+
+    return X_train, X_test, y_train, y_test
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def get_stids(start, end, bbox, meso_token, raws_vars = ["fuel_moisture"], save_path = "data"):
     # Given bounding box and time frame, and desired data varaibles, 
