@@ -220,7 +220,7 @@ class MLP:
                            metrics=self.params.get('metrics', ['accuracy']))
     def fit(self, X_train, y_train):
         """
-        Train the XGBoost model on the training data.
+        Train the model model on the training data.
 
         Parameters:
         -----------
