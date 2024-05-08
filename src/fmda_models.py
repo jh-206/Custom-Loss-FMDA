@@ -73,7 +73,7 @@ class XGB:
         if w is None:
             self.model.fit(X_train, y_train)
         else:
-            self.model.fit(X_train, y_train, w)
+            self.model.fit(X_train, y_train, sample_weight=w)
 
     def predict(self, X_test):
         """
