@@ -9,7 +9,8 @@ import logging
 
 # Function for spatiotemporal crossvalidation
 def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date", 
-                               temporal_test_frac = 0.1, spatial_test_frac = 0.2):
+                               temporal_test_frac = 0.1, spatial_test_frac = 0.2,
+                               verbose=True):
     """
     Method to split a dataframe into train/test, accounting for spatiotemporal relationships.
     Resulting test set will consist of locations not included in training and at future times.
@@ -25,7 +26,13 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
         If lon/lat specify unique locations, use these to construct a single IDs column
     tid : str, default = "date"
         Temporal ID, column of dataframe consisting of datetimes of observations
-
+    temporal_test_frac : float, default = 0.1
+        Percent of timesteps to hold out for test set. Test set taken from most recent times
+    spatial_test_frac : float, default = 0.2
+        Percent of unique locations to hold out for test set.
+    vergose : boolean, default = True
+        Indicator on whether to print info to console
+    
     Returns:
     -----------
     X_train, X_test, y_train, y_test : 
@@ -52,6 +59,15 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
     y_train = df_train[yid]
     y_test = df_test[yid]
 
+    # Print info if verbose
+    if verbose:
+        print(f"Number of Training Observations: {X_train.shape[0]}")
+        print(f"Number of Training Locations: {len(X_train.stid.unique())}")
+        print(f"Time range Train: {X_train.date.min().strftime('%Y-%m-%d %H:%M:%S'), X_train.date.max().strftime('%Y-%m-%d %H:%M:%S')}")
+        print("~"*50)
+        print(f"Number of Test Observations: {X_test.shape[0]}")
+        print(f"Number of Test Locations: {len(X_test.stid.unique())}")
+        print(f"Time range Train: {X_test.date.min().strftime('%Y-%m-%d %H:%M:%S'), X_test.date.max().strftime('%Y-%m-%d %H:%M:%S')}")
     return X_train, X_test, y_train, y_test
 
 
