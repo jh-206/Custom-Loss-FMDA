@@ -47,7 +47,7 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
     # Subset based on time
     times = df[tid].unique()
     hour_diff = (times.max() - times.min()).total_seconds() / 3600 # Difference in hours between start and stop times
-    h2 = times.min() + timedelta(hours=hour_diff*temporal_test_frac) # time marking train/test split
+    h2 = times.min() + timedelta(hours=hour_diff*(1-temporal_test_frac)) # time marking train/test split
 
     # Split based on space and time
     df_train = df[(df[tid] < h2) & (df[spid].isin(train_locs))]
@@ -67,7 +67,7 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
         print("~"*50)
         print(f"Number of Test Observations: {X_test.shape[0]}")
         print(f"Number of Test Locations: {len(X_test.stid.unique())}")
-        print(f"Time range Train: {X_test.date.min().strftime('%Y-%m-%d %H:%M:%S'), X_test.date.max().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"Time range Test: {X_test.date.min().strftime('%Y-%m-%d %H:%M:%S'), X_test.date.max().strftime('%Y-%m-%d %H:%M:%S')}")
     return X_train, X_test, y_train, y_test
 
 
