@@ -5,6 +5,10 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.linear_model import LinearRegression
+from xgboost import XGBRegressor
+from abc import ABC, abstractmethod
+from metrics import ros
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Machine Learning Model Classes
@@ -14,160 +18,61 @@ from sklearn.linear_model import LinearRegression
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-# XGBoost Model
-class XGB:
-    """
-    Wrapper class for XGBoost regression model.
-    Parameters:
-    -----------
-    params : dict
-        Parameters to be passed to the XGBoost model.
-    loss : str, default='reg:squarederror'
-        loss function to be optimized during training.
-        See https://xgboost.readthedocs.io/en/latest/parameter.html for options.
 
-    Attributes:
-    -----------
-    model : xgboost.XGBRegressor
-        Underlying XGBoost regression model.
-    params : dict
-        Parameters passed to the XGBoost model.
-
-    Methods:
-    --------
-    fit(X_train, y_train):
-        Train the XGBoost model on the training data.
-    predict(X_test):
-        Make predictions using the trained model.
-    get_feature_importance():
-        Get feature importances from the trained model.
-    """
-    def __init__(self, params, loss='reg:squarederror'):
-        """
-        Initialize the XGB class.
-        Parameters:
-        -----------
-        params : dict
-            HyperParameters to be passed to the XGBoost model.
-        loss : str or custom func, default='reg:squarederror'
-            loss function to be optimized during training.
-            See https://xgboost.readthedocs.io/en/latest/parameter.html for options.
-        """
+class MLModel(ABC):
+    def __init__(self, params: dict):
         self.params = params
-        self.params['objective'] = loss # XGBoost package uses term objective function, translate here
-        self.model = xg.XGBRegressor(**self.params)
+        if type(self) is MLModel:
+            raise TypeError("MLModel is an abstract class and cannot be instantiated directly")
+        super().__init__()
 
-    def fit(self, X_train, y_train, w=None):
-        """
-        Train the XGBoost model on the training data.
+    @abstractmethod
+    def fit(self, X_train, y_train, weights=None):
+        pass
 
-        Parameters:
-        -----------
-        X_train : array-like or sparse matrix of shape (n_samples, n_features)
-            Training input samples.
-        y_train : array-like of shape (n_samples,)
-            Target values.
-        w: array-like of shape (n_ssamples,)
-            Weights to use for custom loss
-        """
-        if w is None:
-            self.model.fit(X_train, y_train)
-        else:
-            self.model.fit(X_train, y_train, sample_weight=w)
+    @abstractmethod
+    def predict(self, X):
+        pass
 
-    def predict(self, X_test):
-        """
-        Make predictions using the trained model.
-        Parameters:
-        -----------
-        X_test : array-like or sparse matrix of shape (n_samples, n_features)
-            Test input samples.
+    def eval(self, X_test, y_test):
+        preds = self.predict(X_test)
+        rmse = np.sqrt(mean_squared_error(y_test, preds))
+        rmse_ros = np.sqrt(mean_squared_error(ros(y_test), ros(preds)))
+        print(f"Test RMSE: {rmse}")
+        print(f"Test RMSE (ROS): {rmse_ros}")
+        return rmse, rmse_ros
 
-        Returns:
-        --------
-        array-like of shape (n_samples,)
-            Predicted target values.
-        """
-        return self.model.predict(X_test)
+class XGB(MLModel):
+    def __init__(self, params: dict):
+        super().__init__(params)
+        self.model = XGBRegressor(**self.params)
 
-    def get_feature_importance(self):
-        """
-        Get feature importances from the trained model.
-        Returns:
-        --------
-        array of shape (n_features,)
-            Feature importances.
-        """
-        return self.model.feature_importances_
+    def fit(self, X_train, y_train, weights=None):
+        self.model.fit(X_train, y_train, sample_weight=weights)
+        print(f"Training XGB with params: {self.params}")
+
+    def predict(self, X):
+        preds = self.model.predict(X)
+        print("Predicting with XGB")
+        return preds
+
+class LM(MLModel):
+    def __init__(self, params: dict):
+        super().__init__(params)
+        self.model = LinearRegression(**self.params)
+
+    def fit(self, X_train, y_train, weights=None):
+        self.model.fit(X_train, y_train, sample_weight=weights)
+        print(f"Training LM with params: {self.params}")
+
+    def predict(self, X):
+        preds = self.model.predict(X)
+        print("Predicting with LM")
+        return preds
 
 
-# Linear Regression Model
-class LM:
-    """
-    Wrapper class for LinearRegression model.
-    Parameters:
-    -----------
-    params : dict
-        Parameters to be passed to the XGBoost model.
-    loss : 
 
-    Attributes:
-    -----------
-    model : sklearn.linear_model._base.LinearRegression
-        Underlying linear regression model.
-    Methods:
-    --------
-    fit(X_train, y_train):
-        Train the XGBoost model on the training data.
-    predict(X_test):
-        Make predictions using the trained model.
-    get_coefs():
-        Get coefficient estimates and summary stats.
-    """
-    def __init__(self, loss=None):
-        """
-        Initialize the LM class.
-        Parameters:
-        -----------
-        loss : str or custom func
-        """
-        # self.params['loss'] = loss
-        self.model = LinearRegression()
 
-    def fit(self, X_train, y_train, w=None):
-        """
-        Train the LM model on the training data.
-
-        Parameters:
-        -----------
-        X_train : array-like or sparse matrix of shape (n_samples, n_features)
-            Training input samples.
-        y_train : array-like of shape (n_samples,)
-            Target values.
-        w : array-like of shape (n_samples,)
-            sample weights for weighted loss func
-        """
-        if w is None:
-            self.model.fit(X_train, y_train)
-        else:
-            self.model.fit(X_train, y_train, w)
-
-    def predict(self, X_test):
-        """
-        Make predictions using the trained model.
-        Parameters:
-        -----------
-        X_test : array-like or sparse matrix of shape (n_samples, n_features)
-            Test input samples.
-
-        Returns:
-        --------
-        array-like of shape (n_samples,)
-            Predicted target values.
-        """
-        return self.model.predict(X_test)
-    def get_coefs(self):
-        return lm.coef_
 
 # Multilayer Perceptron
 class MLP:
