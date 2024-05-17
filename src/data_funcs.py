@@ -18,7 +18,7 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
     Parameters:
     -----------
     df : DataFrame
-        Dataframe of data to be split
+        Dataframe of data to be split.
     yid : str, default='fm'
         Column of dataframe to be used for y_train, y_test
     spid : str, default='stid'
@@ -63,6 +63,7 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
     if verbose:
         print(f"Number of Training Observations: {X_train.shape[0]}")
         print(f"Number of Training Locations: {len(X_train.stid.unique())}")
+        print(f"Number of Features: {X_train.shape[1]}")
         print(f"Time range Train: {X_train.date.min().strftime('%Y-%m-%d %H:%M:%S'), X_train.date.max().strftime('%Y-%m-%d %H:%M:%S')}")
         print("~"*50)
         print(f"Number of Test Observations: {X_test.shape[0]}")
