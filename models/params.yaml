@@ -1,3 +1,4 @@
+# File used to store hyperparameters for various ML models. 
 xgb:
   max_depth: 3
   eta: 0.1
@@ -15,3 +16,9 @@ mlp:
     validation_split: 0.2
     dropout: 0.2
     learning_rate: 0.001
+
+lm:
+  fit_intercept: true
+  
+
+  
