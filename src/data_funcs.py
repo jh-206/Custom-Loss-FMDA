@@ -8,8 +8,8 @@ from sklearn.model_selection import train_test_split
 import logging
 
 # Function for spatiotemporal crossvalidation
-def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date", 
-                               temporal_test_frac = 0.1, spatial_test_frac = 0.2,
+def train_test_split_spacetime(df, yid = "fm", spid = "STID", tid = "date", 
+                               test_days = 2, spatial_test_frac = 0.2,
                                verbose=True):
     """
     Method to split a dataframe into train/test, accounting for spatiotemporal relationships.
@@ -26,8 +26,8 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
         If lon/lat specify unique locations, use these to construct a single IDs column
     tid : str, default = "date"
         Temporal ID, column of dataframe consisting of datetimes of observations
-    temporal_test_frac : float, default = 0.1
-        Percent of timesteps to hold out for test set. Test set taken from most recent times
+    test_days : int, default = 2
+        Number of days of data to hold out for test set. Test set taken from most recent times
     spatial_test_frac : float, default = 0.2
         Percent of unique locations to hold out for test set.
     vergose : boolean, default = True
@@ -46,9 +46,10 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
 
     # Subset based on time
     times = df[tid].unique()
-    hour_diff = (times.max() - times.min()).total_seconds() / 3600 # Difference in hours between start and stop times
-    h2 = times.min() + timedelta(hours=hour_diff*(1-temporal_test_frac)) # time marking train/test split
-
+    # hour_diff = (times.max() - times.min()).total_seconds() / 3600 # Difference in hours between start and stop times
+    # h2 = times.min() + timedelta(hours=hour_diff*(1-temporal_test_frac)) # time marking train/test split
+    h2 = times.max() - timedelta(days=test_days) # time marking train/test split
+    
     # Split based on space and time
     df_train = df[(df[tid] < h2) & (df[spid].isin(train_locs))]
     df_test = df[(df[tid] >= h2) & (~df[spid].isin(train_locs))]
@@ -62,14 +63,15 @@ def train_test_split_spacetime(df, yid = "fm", spid = "stid", tid = "date",
     # Print info if verbose
     if verbose:
         print(f"Number of Training Observations: {X_train.shape[0]}")
-        print(f"Number of Training Locations: {len(X_train.stid.unique())}")
+        print(f"Number of Training Locations: {len(X_train[spid].unique())}")
         print(f"Number of Features: {X_train.shape[1]}")
         print(f"Time range Train: {X_train.date.min().strftime('%Y-%m-%d %H:%M:%S'), X_train.date.max().strftime('%Y-%m-%d %H:%M:%S')}")
-        print("~"*50)
+        print("-"*10)
         print(f"Number of Test Observations: {X_test.shape[0]}")
-        print(f"Number of Test Locations: {len(X_test.stid.unique())}")
+        print(f"Number of Test Locations: {len(X_test[spid].unique())}")
         print(f"Time range Test: {X_test.date.min().strftime('%Y-%m-%d %H:%M:%S'), X_test.date.max().strftime('%Y-%m-%d %H:%M:%S')}")
     return X_train, X_test, y_train, y_test
+
 
 
 
