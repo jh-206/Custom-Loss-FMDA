@@ -5,6 +5,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from abc import ABC, abstractmethod
 from metrics import ros
@@ -54,6 +55,20 @@ class XGB(MLModel):
 
     def predict(self, X):
         print("Predicting with XGB")
+        preds = self.model.predict(X)
+        return preds
+
+class RF(MLModel):
+    def __init__(self, params: dict):
+        super().__init__(params)
+        self.model = RandomForestRegressor(**self.params)
+
+    def fit(self, X_train, y_train, weights=None):
+        print(f"Training RF with params: {self.params}")
+        self.model.fit(X_train, y_train, sample_weight=weights)
+
+    def predict(self, X):
+        print("Predicting with RF")
         preds = self.model.predict(X)
         return preds
 
@@ -112,95 +127,6 @@ class MLP(MLModel):
 
 
 
-# Multilayer Perceptron
-# class MLP:
-#     """
-#     Wrapper class for multilayer perceptron neural network model.
-#     Parameters:
-#     -----------
-#     params : dict
-#         Parameters to be passed to the XGBoost model.
-#     loss : 
-#     Attributes:
-#     -----------
-#     model : keras.engine.sequential.Sequential
-#         Underlying neural network.
-#     params : dict
-#         Parameters passed to the NN model.
-
-#     Methods:
-#     --------
-#     fit(X_train, y_train):
-#         Train the model on the training data.
-#     predict(X_test):
-#         Make predictions using the trained model.
-#     """
-#     def __init__(self, params, loss='mean_squared_error'):
-#         """
-#         Initialize the MLP class.
-#         Parameters:
-#         -----------
-#         params : dict
-#             HyperParameters to be passed to the XGBoost model.
-#         objective : str or custom func.
-#         """
-#         self.params = params
-#         self.params['loss'] = loss
-#         self.model = self._build_model()
-#         self.compile_model()
-
-#     def _build_model(self):
-#         model = tf.keras.Sequential([
-#             tf.keras.layers.Dense(self.params['hidden_units'], activation=self.params['activation'], input_shape=(self.params['input_dim'],)),
-#             tf.keras.layers.Dropout(self.params['dropout']),  # Dropout layer
-#             tf.keras.layers.Dense(1)  # Output layer with a single neuron for regression
-#         ])
-#         return model
-#     def compile_model(self):
-#         optimizer=tf.keras.optimizers.Adam(learning_rate=self.params['learning_rate'])
-#         self.model.compile(optimizer=optimizer,
-#                            loss=self.params['loss'],
-#                            metrics=self.params.get('metrics', ['accuracy']))
-#     def fit(self, X_train, y_train, plot=True):
-#         """
-#         Train the model model on the training data.
-
-#         Parameters:
-#         -----------
-#         X_train : array-like or sparse matrix of shape (n_samples, n_features)
-#             Training input samples.
-#         y_train : array-like of shape (n_samples,)
-#             Target values.
-#         """
-#         history = self.model.fit(X_train, y_train, epochs=self.params['epochs'], batch_size=self.params['batch_size'], validation_split=self.params['validation_split'])
-#         if plot:
-#             self.plot_history(history)
-    
-#     def predict(self, X_test):
-#         """
-#         Make predictions using the trained model.
-#         Parameters:
-#         -----------
-#         X_test : array-like or sparse matrix of shape (n_samples, n_features)
-#             Test input samples.
-
-#         Returns:
-#         --------
-#         array-like of shape (n_samples,)
-#             Predicted target values.
-#         """
-#         return self.model.predict(X_test)
-#     def summary(self):
-#         return self.model.summary()
-
-#     def plot_history(self, history):
-#         plt.plot(history.history['loss'])
-#         plt.plot(history.history['val_loss'])
-#         plt.title('model loss')
-#         plt.ylabel('loss')
-#         plt.xlabel('epoch')
-#         plt.legend(['train', 'val'], loc='upper left')
-#         plt.show()
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
