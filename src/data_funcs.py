@@ -2,7 +2,9 @@ import json
 import subprocess
 import os.path as osp
 import pandas as pd
-import numpy as np
+import numpy as np, random
+from numpy.random import rand
+from fmda_models import model_decay, model_moisture
 from datetime import datetime, timedelta
 from sklearn.model_selection import train_test_split
 import logging
@@ -180,3 +182,30 @@ def str2time(input):
         return [str2time(s) for s in input]
     else:
         raise ValueError("Input must be a string or a list of strings")
+
+
+
+
+def synthetic_data(days=20,power=4,data_noise=0.02,process_noise=0.0,
+    DeltaE=0.0,Emin=5,Emax=30,p_rain=0.01,max_rain=10.0):
+    hours = days*24
+    h2 = int(hours/2)
+    hour = np.array(range(hours))
+    day = np.array(range(hours))/24.
+    # artificial equilibrium data
+    E = np.power(np.sin(np.pi*day),power) # diurnal curve betwen 0 and 1
+    E = Emin+(Emax - Emin)*E
+    E = E + DeltaE
+    Ed=E+0.5
+    Ew=np.maximum(E-0.5,0)
+    rain = np.multiply(rand(hours) < p_rain, rand(hours)*max_rain)
+    # FMC free run
+    fm = np.zeros(hours)
+    fm[0] = 0.1         # initial FMC
+    # process_noise=0.
+    for t in range(hours-1):
+        fm[t+1] = max(0.,model_moisture(fm[t],Ed[t-1],Ew[t-1],rain[t-1])  + random.gauss(0,process_noise))
+    fm = fm + np.random.normal(loc=0,scale=data_noise,size=hours)
+    dat = {'E':E,'Ew':Ew,'Ed':Ed,'fm':fm,'hours':hours,'h2':h2,'DeltaE':DeltaE,'rain':rain,'title':'Synthetic data'}
+    
+    return dat
