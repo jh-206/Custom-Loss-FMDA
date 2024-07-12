@@ -8,7 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 from abc import ABC, abstractmethod
-from metrics import ros
+from metrics import ros_0wind, ros_3wind
 import matplotlib.pyplot as plt
 
 
@@ -39,7 +39,7 @@ class MLModel(ABC):
     def eval(self, X_test, y_test):
         preds = self.predict(X_test)
         rmse = np.sqrt(mean_squared_error(y_test, preds))
-        rmse_ros = np.sqrt(mean_squared_error(ros(y_test), ros(preds)))
+        rmse_ros = np.sqrt(mean_squared_error(ros_3wind(y_test), ros_3wind(preds)))
         print(f"Test RMSE: {rmse}")
         print(f"Test RMSE (ROS): {rmse_ros}")
         return rmse, rmse_ros
