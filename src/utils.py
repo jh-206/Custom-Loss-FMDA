@@ -5,6 +5,54 @@ from matplotlib.patches import Polygon
 import plotly.express as px
 import plotly.graph_objects as go
 from functools import singledispatch
+from fmda_models import XGB, LM, RF
+from metrics import ros_3wind, ros_0wind
+import tensorflow as tf
+
+def initialize_models(params):
+    models = {
+        'XGB' : XGB(params['xgb']),
+        'LM' : LM(params['lm']),
+        'RF' : RF(params['rf'])
+    }
+
+    return models
+
+def create_exp_function(w):
+    def exp_function(y_train):
+        return tf.exp(tf.multiply(-w, y_train))
+    return exp_function
+
+def loss_setup(params, ws = None):
+    loss_fucs = ["MSE", "exp", "ROS"]
+    # set up return dictionary
+    loss = {
+        'MSE' : {
+            'w_func' : None
+        }
+    } 
+    # Using input omega parameter list, add dictionary key for exponential weighting for each omega in list 
+    if ws is not None:
+        for w in ws:
+            assert isinstance(w, float) # Check that given list of floats
+            dname = f"exp_{w}" # create name of dictionary key
+            loss[dname] = {
+                'w_func' : create_exp_function(w)
+            }
+    loss["ROS"] = {'w_func': ros_3wind}
+
+    models = initialize_models(params)
+    for l in loss:
+        loss[l][f"errs"]={}
+        for mod in models:
+            loss[l][f"errs"][mod] = {
+                "rmse_test" : [],
+                "rmse_test_ROS" : [],
+                "t": [] # time of earliest train period
+            }
+    
+    return models, loss
+
 
 # Map stations, credit 
     # https://stackoverflow.com/questions/53233228/plot-latitude-longitude-from-csv-in-python-3-6
